@@ -3,8 +3,7 @@
 ; Date : (C)2025 By Filax/CreepyCat
 ; Site : https://github.com/BlackCreepyCat
 ; -----------------------------------------
-
-Function DrawSplineBezier(x1#, y1#, x2#, y2#, segments%, AutoCurve% = True , Invert% = False)
+Function DrawSplineBezier(x1#, y1#, x2#, y2#, segments%, AutoCurve% = True , Invert% = False, Debug% = False)
     Local i#, j#, t#, x#, y#, prevX#, prevY#
     Local cx1#, cy1#, cx2#, cy2#
 	
@@ -15,25 +14,22 @@ Function DrawSplineBezier(x1#, y1#, x2#, y2#, segments%, AutoCurve% = True , Inv
 
     ; Calcul automatique des points de contrôle si AutoCurve est activé
     If AutoCurve
-	
         ; Calcul des points de contrôle basés sur la distance
         CurveFactor% = Int(distance * 0.5)  ; Ajuste la courbure en fonction de la distance
 
-		Select Invert%
+        Select Invert%
+        Case False
+            cx1 = x1 - CurveFactor%             ; Fraction de la distance pour le premier point de contrôle
+            cx2 = x2 + CurveFactor%            ; Symétrique pour le second point de contrôle		
+        Case True
+            cx1 = x1 + CurveFactor%             ; Fraction de la distance pour le premier point de contrôle
+            cx2 = x2 - CurveFactor%            ; Symétrique pour le second point de contrôle
+        End Select
 
-		Case False
-        	cx1 = x1 - CurveFactor%             ; Fraction de la distance pour le premier point de contrôle
-        	cx2 = x2 + CurveFactor%            ; Symétrique pour le second point de contrôle		
-		Case True
-        	cx1 = x1 + CurveFactor%             ; Fraction de la distance pour le premier point de contrôle
-        	cx2 = x2 - CurveFactor%            ; Symétrique pour le second point de contrôle
-		End Select
-
-		cy1 = y1  
+        cy1 = y1  
         cy2 = y2
 		
     Else
-	
         ; Si AutoCurve est désactivé, utiliser les points de contrôle fournis par l'utilisateur
         cx1 = x1
         cy1 = y1
@@ -54,7 +50,24 @@ Function DrawSplineBezier(x1#, y1#, x2#, y2#, segments%, AutoCurve% = True , Inv
         prevX = x
         prevY = y
     Next
+
+    If Debug% = True Then
+        ; Affichage des points de contrôle (optionnel)
+        Color 255, 0, 0
+        Oval cx1 - 4 , cy1 - 4 , 8 ,8  ; Point de contrôle 1 (rouge)
+    
+        Color 0, 255, 0
+        Oval cx2 - 4 , cy2 - 4 , 8 , 8 ; Point de contrôle 2 (vert)
+        
+        ; Affichage des lignes de tangente (optionnel)
+        Color 255, 0, 0
+        Line x1, y1, cx1, cy1  ; Ligne de tangente 1
+
+        Color 0, 255, 0
+        Line x2, y2, cx2, cy2  ; Ligne de tangente 2
+    EndIf
 End Function
+
 
 Graphics 1024,768,0,2
 SetBuffer BackBuffer()
@@ -66,8 +79,8 @@ SetBuffer BackBuffer()
 ; x2, y2 	= Coordonnées du second point (fin de la courbe).
 ; segments 	= Nombre de segments pour approximer la courbe (plus élevé = plus fluide).
 ; ---------------------------------------------------------------------------------------
-Local NewX = 20
-Local NewY = 30
+Local NewX = 50
+Local NewY = 50
 Local Invert% = False
 
 While Not KeyDown(1)
@@ -83,7 +96,7 @@ While Not KeyDown(1)
 	EndIf	
 
 	
-    DrawSplineBezier(NewX, NewY,    MouseX(), MouseY(), 20 , True , Invert%)
+    DrawSplineBezier(NewX, NewY,    MouseX(), MouseY(), 200 , True , Invert%, True)
     Flip
 Wend
 End
