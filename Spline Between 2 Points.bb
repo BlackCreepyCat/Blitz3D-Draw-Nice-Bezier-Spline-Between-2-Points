@@ -4,7 +4,7 @@
 ; Site : https://github.com/BlackCreepyCat
 ; -----------------------------------------
 
-Function DrawSplineBezier(x1#, y1#, x2#, y2#, segments%, AutoCurve% = True)
+Function DrawSplineBezier(x1#, y1#, x2#, y2#, segments%, AutoCurve% = True , Invert% = False)
     Local i#, j#, t#, x#, y#, prevX#, prevY#
     Local cx1#, cy1#, cx2#, cy2#
 	
@@ -13,20 +13,33 @@ Function DrawSplineBezier(x1#, y1#, x2#, y2#, segments%, AutoCurve% = True)
     ; Calcul de la distance entre les deux points
     distance = Sqr((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1))
 
-    ; Calcul automatique des points de contrÙle si AutoCurve est activÈ
+    ; Calcul automatique des points de contr√¥le si AutoCurve est activ√©
     If AutoCurve
-        ; Calcul des points de contrÙle basÈs sur la distance
+	
+        ; Calcul des points de contr√¥le bas√©s sur la distance
         CurveFactor% = Int(distance * 0.5)  ; Ajuste la courbure en fonction de la distance
-        cx1 = x1 + CurveFactor%             ; Fraction de la distance pour le premier point de contrÙle
-        cy1 = y1  
-        cx2 = x2 - CurveFactor%            ; SymÈtrique pour le second point de contrÙle
-        cy2 = y2 
+
+		Select Invert%
+
+		Case False
+        	cx1 = x1 - CurveFactor%             ; Fraction de la distance pour le premier point de contr√¥le
+        	cx2 = x2 + CurveFactor%            ; Sym√©trique pour le second point de contr√¥le		
+		Case True
+        	cx1 = x1 + CurveFactor%             ; Fraction de la distance pour le premier point de contr√¥le
+        	cx2 = x2 - CurveFactor%            ; Sym√©trique pour le second point de contr√¥le
+		End Select
+
+		cy1 = y1  
+        cy2 = y2
+		
     Else
-        ; Si AutoCurve est dÈsactivÈ, utiliser les points de contrÙle fournis par l'utilisateur
+	
+        ; Si AutoCurve est d√©sactiv√©, utiliser les points de contr√¥le fournis par l'utilisateur
         cx1 = x1
         cy1 = y1
         cx2 = x2
         cy2 = y2
+		
     End If
 
     prevX = x1
@@ -47,15 +60,30 @@ Graphics 1024,768,0,2
 SetBuffer BackBuffer()
 
 ; ---------------------------------------------------------------------------------------
-; x1, y1 	= CoordonnÈes du premier point (dÈpart de la courbe).
-; cx1, cy1 	= CoordonnÈes du premier point de contrÙle (influence la tangente au dÈpart).
-; cx2, cy2 	= CoordonnÈes du second point de contrÙle (influence la tangente ‡ l'arrivÈe).
-; x2, y2 	= CoordonnÈes du second point (fin de la courbe).
-; segments 	= Nombre de segments pour approximer la courbe (plus ÈlevÈ = plus fluide).
+; x1, y1 	= Coordonn√©es du premier point (d√©part de la courbe).
+; cx1, cy1 	= Coordonn√©es du premier point de contr√¥le (influence la tangente au d√©part).
+; cx2, cy2 	= Coordonn√©es du second point de contr√¥le (influence la tangente √† l'arriv√©e).
+; x2, y2 	= Coordonn√©es du second point (fin de la courbe).
+; segments 	= Nombre de segments pour approximer la courbe (plus √©lev√© = plus fluide).
 ; ---------------------------------------------------------------------------------------
+Local NewX = 20
+Local NewY = 30
+Local Invert% = False
+
 While Not KeyDown(1)
     Cls
-    DrawSplineBezier(20, 30,    MouseX(), MouseY(), 20)
+
+	If MouseHit(2) Then
+		NewX = MouseX()
+		NewY = MouseY()
+	EndIf
+
+	If MouseHit(3) Then
+		Invert% = 1 - Invert%
+	EndIf	
+
+	
+    DrawSplineBezier(NewX, NewY,    MouseX(), MouseY(), 20 , True , Invert%)
     Flip
 Wend
 End
